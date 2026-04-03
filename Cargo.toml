@@ -1,6 +1,6 @@
 [package]
 name = "wavecli"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "TUI audio player and analyzer with waveform and spectrogram visualization"
 license = "MIT"
