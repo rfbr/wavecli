@@ -463,6 +463,8 @@ impl App {
             filename: name,
         });
         self.log_lines.clear();
+        self.show_file_browser = false;
+        self.focus = Focus::Player;
     }
 }
 
