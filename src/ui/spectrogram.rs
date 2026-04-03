@@ -115,7 +115,10 @@ impl<'a> Widget for SpectrogramWidget<'a> {
 
         let range_db = (self.data.max_db - self.data.min_db).max(1.0);
 
-        let cursor_col = (self.playback_fraction * width as f64) as usize;
+        // Cursor position with sub-cell precision (2x horizontal, matching braille)
+        let cursor_pos = self.playback_fraction * width as f64;
+        let cursor_col = cursor_pos as usize;
+        let cursor_right_half = (cursor_pos - cursor_col as f64) >= 0.5;
 
         for col in 0..width {
             let time_bin =
@@ -143,10 +146,12 @@ impl<'a> Widget for SpectrogramWidget<'a> {
                 let y = area.y + row as u16;
 
                 if col == cursor_col {
+                    // Braille cursor: left dots (⡇) or right dots (⢸) for sub-cell precision
+                    let ch = if cursor_right_half { '\u{2838}' } else { '\u{2807}' };
                     buf[(x, y)]
-                        .set_char('|')
+                        .set_char(ch)
                         .set_fg(Color::Yellow)
-                        .set_bg(Color::Reset);
+                        .set_bg(color_bot);
                 } else {
                     buf[(x, y)]
                         .set_char('\u{2580}')
