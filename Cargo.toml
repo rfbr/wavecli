@@ -1,0 +1,36 @@
+[package]
+name = "wavecli"
+version = "0.1.0"
+edition = "2021"
+description = "TUI audio player and analyzer with waveform and spectrogram visualization"
+license = "MIT"
+repository = "https://github.com/rfbr/wavecli"
+keywords = ["audio", "tui", "spectrogram", "waveform", "player"]
+categories = ["command-line-utilities", "multimedia::audio"]
+
+[[bin]]
+name = "wavecli"
+path = "src/main.rs"
+
+[dependencies]
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# Audio decoding
+symphonia = { version = "0.5", features = ["all"] }
+
+# Audio playback
+rodio = "0.20"
+
+# FFT
+rustfft = "6.2"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Color mapping
+colorous = "1.0"
+
+# Suppress ALSA stderr warnings
+libc = "0.2"
