@@ -3,7 +3,7 @@ use ratatui::layout::{Constraint, Direction, Layout, Rect};
 pub struct AppLayout {
     pub file_browser: Rect,
     pub info: Rect,
-    pub waveform: Rect,
+    pub waveforms: Vec<Rect>,
     pub spectrogram: Rect,
     pub controls: Rect,
 }
@@ -13,6 +13,7 @@ pub fn build_layout(
     show_waveform: bool,
     show_spectrogram: bool,
     show_file_browser: bool,
+    num_waveform_channels: usize,
 ) -> AppLayout {
     // Split horizontally: file browser | main content
     let h_chunks = if show_file_browser {
@@ -59,10 +60,24 @@ pub fn build_layout(
         .constraints(constraints)
         .split(main_area);
 
+    let waveform_area = chunks[1];
+    let waveforms = if show_waveform && num_waveform_channels > 0 {
+        let ch_constraints: Vec<Constraint> = (0..num_waveform_channels)
+            .map(|_| Constraint::Ratio(1, num_waveform_channels as u32))
+            .collect();
+        Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(ch_constraints)
+            .split(waveform_area)
+            .to_vec()
+    } else {
+        Vec::new()
+    };
+
     AppLayout {
         file_browser,
         info: chunks[0],
-        waveform: chunks[1],
+        waveforms,
         spectrogram: chunks[2],
         controls: chunks[3],
     }

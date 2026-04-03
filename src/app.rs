@@ -152,11 +152,13 @@ impl App {
 
     fn draw(&self, f: &mut ratatui::Frame) {
         let area = f.area();
+        let num_channels = self.loaded.as_ref().map_or(0, |lf| lf.audio.channels);
         let layout = ui::layout::build_layout(
             area,
             self.show_waveform && self.loaded.is_some(),
             self.show_spectrogram && self.loaded.is_some(),
             self.show_file_browser,
+            if self.show_waveform { num_channels } else { 0 },
         );
 
         if self.show_file_browser {
@@ -191,13 +193,13 @@ impl App {
 
                 let playback_fraction = lf.player.position_fraction();
 
-                if self.show_waveform {
+                for (ch, &waveform_area) in layout.waveforms.iter().enumerate() {
                     ui::waveform::render(
                         f,
-                        layout.waveform,
-                        &lf.audio.samples[0],
+                        waveform_area,
+                        &lf.audio.samples[ch],
                         playback_fraction,
-                        0,
+                        ch,
                         lf.audio.channels,
                     );
                 }
