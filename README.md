@@ -2,6 +2,8 @@
 
 A terminal audio player with waveform and spectrogram visualization.
 
+![wavecli screenshot](https://github.com/user-attachments/assets/375de0c5-7893-4192-b227-d9ff77ad602a)
+
 ## Install
 
 ```bash
