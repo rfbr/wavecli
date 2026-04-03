@@ -1,6 +1,6 @@
 # wavecli
 
-A terminal audio player with waveform and spectrogram visualization.
+A terminal audio player with waveform and spectrogram visualization. Inspired by the [Audio Preview](https://marketplace.visualstudio.com/items?itemName=sukumo28.wav-preview) VS Code extension.
 
 ![wavecli screenshot](https://github.com/user-attachments/assets/375de0c5-7893-4192-b227-d9ff77ad602a)
 
