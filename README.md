@@ -44,6 +44,7 @@ Supports WAV, MP3, FLAC, OGG, AAC, Opus, and M4A.
 | Space | Play / pause |
 | Left / Right | Seek 5s |
 | Up / Down | Volume |
+| [ / ] | Balance left / right (stereo) |
 | Tab | Switch focus (file browser / player) |
 | Enter | Load selected file |
 | f | Toggle file browser |
@@ -57,7 +58,8 @@ When the file browser is focused, type to filter files by name.
 ## Features
 
 - Decode and play audio files (via Symphonia + rodio)
-- Waveform display with playback cursor
+- Per-channel waveform display with playback cursor
+- Stereo balance control
 - Spectrogram with frequency axis and viridis colormap
 - File browser with search filter
 - Works without an audio device (visualization-only mode)

@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -10,6 +10,24 @@ struct AudioSource {
     channels: u16,
     sample_rate: u32,
     position: Arc<AtomicU64>, // current sample index
+    balance: Arc<AtomicU32>,  // f32 bits: -1.0 (left) to 1.0 (right)
+}
+
+impl AudioSource {
+    fn balance_gain(&self, sample_idx: usize) -> f32 {
+        if self.channels != 2 {
+            return 1.0;
+        }
+        let balance = f32::from_bits(self.balance.load(Ordering::Relaxed));
+        let ch = sample_idx % 2;
+        if ch == 0 {
+            // left channel
+            (1.0 - balance).clamp(0.0, 1.0)
+        } else {
+            // right channel
+            (1.0 + balance).clamp(0.0, 1.0)
+        }
+    }
 }
 
 impl Iterator for AudioSource {
@@ -23,7 +41,7 @@ impl Iterator for AudioSource {
             return None;
         }
 
-        let val = self.samples[sample_idx];
+        let val = self.samples[sample_idx] * self.balance_gain(sample_idx);
         self.position.fetch_add(1, Ordering::Relaxed);
         Some(val)
     }
@@ -66,6 +84,7 @@ struct AudioBackend {
 pub struct Player {
     backend: Option<AudioBackend>,
     position: Arc<AtomicU64>,
+    balance: Arc<AtomicU32>,
     channels: u16,
     sample_rate: u32,
     total_interleaved_samples: usize,
@@ -92,6 +111,7 @@ impl Player {
         }
 
         let position = Arc::new(AtomicU64::new(0));
+        let balance = Arc::new(AtomicU32::new(0.0_f32.to_bits()));
 
         // Suppress ALSA warnings that would corrupt the TUI
         let _stderr_guard = SuppressStderr::new();
@@ -106,6 +126,7 @@ impl Player {
                             channels: channels as u16,
                             sample_rate,
                             position: position.clone(),
+                            balance: balance.clone(),
                         };
                         sink.append(source);
                         Some(AudioBackend {
@@ -125,6 +146,7 @@ impl Player {
         Player {
             backend,
             position,
+            balance,
             channels: channels as u16,
             sample_rate,
             total_interleaved_samples: total_frames * channels,
@@ -235,6 +257,23 @@ impl Player {
 
     pub fn adjust_volume(&mut self, delta: f32) {
         self.set_volume(self.volume + delta);
+    }
+
+    pub fn balance(&self) -> f32 {
+        f32::from_bits(self.balance.load(Ordering::Relaxed))
+    }
+
+    pub fn set_balance(&self, bal: f32) {
+        let clamped = bal.clamp(-1.0, 1.0);
+        self.balance.store(clamped.to_bits(), Ordering::Relaxed);
+    }
+
+    pub fn adjust_balance(&self, delta: f32) {
+        self.set_balance(self.balance() + delta);
+    }
+
+    pub fn is_stereo(&self) -> bool {
+        self.channels == 2
     }
 }
 

@@ -14,6 +14,7 @@ pub fn render(
     duration_secs: f64,
     volume: f32,
     position_fraction: f64,
+    balance: Option<f32>,
 ) {
     let block = Block::default()
         .borders(Borders::ALL)
@@ -50,8 +51,8 @@ pub fn render(
     let right_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Min(10),   // progress bar
-            Constraint::Length(18), // duration + volume
+            Constraint::Min(10),                                       // progress bar
+            Constraint::Length(if balance.is_some() { 27 } else { 18 }), // duration + volume + balance
         ])
         .split(chunks[1]);
 
@@ -62,12 +63,12 @@ pub fn render(
         .gauge_style(Style::default().fg(Color::Cyan).bg(Color::DarkGray));
     f.render_widget(gauge, right_chunks[0]);
 
-    // Duration + volume
+    // Duration + volume + balance
     let dur_min = (duration_secs / 60.0) as u64;
     let dur_sec = duration_secs % 60.0;
     let vol_pct = (volume * 100.0) as u32;
 
-    let info_text = Line::from(vec![
+    let mut spans = vec![
         Span::styled(
             format!(" /{dur_min}:{dur_sec:04.1}"),
             Style::default().fg(Color::White),
@@ -76,6 +77,19 @@ pub fn render(
             format!(" Vol:{vol_pct:3}%"),
             Style::default().fg(Color::Yellow),
         ),
-    ]);
+    ];
+
+    if let Some(bal) = balance {
+        let bal_text = if bal < -0.05 {
+            format!(" Bal:L{:.0}%", -bal * 100.0)
+        } else if bal > 0.05 {
+            format!(" Bal:R{:.0}%", bal * 100.0)
+        } else {
+            " Bal:C".to_string()
+        };
+        spans.push(Span::styled(bal_text, Style::default().fg(Color::Magenta)));
+    }
+
+    let info_text = Line::from(spans);
     f.render_widget(Paragraph::new(info_text), right_chunks[1]);
 }

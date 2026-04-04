@@ -221,6 +221,11 @@ impl App {
                     lf.player.duration_secs(),
                     lf.player.volume(),
                     playback_fraction,
+                    if lf.player.is_stereo() {
+                        Some(lf.player.balance())
+                    } else {
+                        None
+                    },
                 );
             }
             None => {
@@ -364,6 +369,8 @@ impl App {
             KeyCode::Right => lf.player.seek_relative(5.0),
             KeyCode::Up => lf.player.adjust_volume(0.05),
             KeyCode::Down => lf.player.adjust_volume(-0.05),
+            KeyCode::Char('[') => lf.player.adjust_balance(-0.1),
+            KeyCode::Char(']') => lf.player.adjust_balance(0.1),
             KeyCode::Char('w') => self.show_waveform = !self.show_waveform,
             KeyCode::Char('s') => self.show_spectrogram = !self.show_spectrogram,
             _ => {}
